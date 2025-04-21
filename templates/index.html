@@ -1,1 +1,160 @@
+<!--
+Author Name: Keketso Justice Tolo
+Student Number: 202100092
+Course Code: Expert Systems, CS4434
 
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Friends Text Predictor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1 {
+        color: #0066cc;
+        text-align: center;
+      }
+      .container {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      textarea,
+      input[type="number"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      textarea {
+        height: 100px;
+      }
+      button {
+        background-color: #0066cc;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #0055aa;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e6f3ff;
+        border-radius: 4px;
+        display: none;
+      }
+      .error {
+        color: red;
+        font-weight: bold;
+      }
+      .loading {
+        text-align: center;
+        margin-top: 15px;
+        font-style: italic;
+        color: #666;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Friends Text Predictor</h1>
+    <div class="container">
+      <form id="predictForm">
+        <label for="seed_text">Enter some text:</label>
+        <textarea
+          id="seed_text"
+          name="seed_text"
+          required
+          placeholder="Type something like 'How you doing...'"
+        ></textarea>
+
+        <label for="next_words">Number of words to predict:</label>
+        <input
+          type="number"
+          id="next_words"
+          name="next_words"
+          min="1"
+          max="6"
+          value="3"
+          required
+        />
+
+        <button type="submit">Predict Next Words</button>
+      </form>
+
+      <div id="loading" class="loading">Generating prediction...</div>
+
+      <div id="result">
+        <h3>Prediction:</h3>
+        <p id="predicted_text"></p>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("predictForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const seedText = document.getElementById("seed_text").value;
+          const nextWords = document.getElementById("next_words").value;
+
+          document.getElementById("loading").style.display = "block";
+          document.getElementById("result").style.display = "none";
+
+          const formData = new FormData();
+          formData.append("seed_text", seedText);
+          formData.append("next_words", nextWords);
+
+          fetch("/predict", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("loading").style.display = "none";
+              document.getElementById("result").style.display = "block";
+
+              if (data.status === "success") {
+                document.getElementById("predicted_text").textContent =
+                  data.predicted_text;
+                document.getElementById("predicted_text").className = "";
+              } else {
+                document.getElementById("predicted_text").textContent =
+                  "Error: " + data.message;
+                document.getElementById("predicted_text").className = "error";
+              }
+            })
+            .catch((error) => {
+              document.getElementById("loading").style.display = "none";
+              document.getElementById("result").style.display = "block";
+              document.getElementById("predicted_text").textContent =
+                "Error connecting to server: " + error;
+              document.getElementById("predicted_text").className = "error";
+            });
+        });
+    </script>
+  </body>
+</html>
